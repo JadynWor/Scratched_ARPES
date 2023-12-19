@@ -16,10 +16,10 @@ E_gap = 3.2  # band gap in eV
 
 #------------ File Options ------------:
 
-
 #file in:
 root = tk.Tk()
 root.withdraw()
+messagebox.showinfo("Prompt", "Open Test-Data")
 f_in = filedialog.askopenfilename()
 
 #file prefix:
@@ -45,11 +45,7 @@ df = pd.DataFrame([line.split() for line in lines])
 in_array = df.to_numpy()
 
 # Read the file using pandas
-#df = pd.read_csv(f_in, sep=' ', header=0, encoding='latin-1')
-#df = pd.read_csv(f_in, sep=',', header=0, encoding='latin-1')
 df = pd.read_csv(f_in, sep='\t', header=0, encoding='latin-1')
-
-
 
 
 # Convert DataFrame to NumPy array
@@ -58,6 +54,9 @@ in_array = df.to_numpy()
 #get # of energies and species:
 n_hv = np.size(in_array, axis=0) - 1
 n_spec = np.size(in_array, axis=1) - 1
+
+
+#------------ End Of Input Arrays ------------:
 
 #get hv and species (BE):
 hv = []
