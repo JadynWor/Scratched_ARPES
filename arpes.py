@@ -9,6 +9,8 @@ import warnings  # Import the warnings module
 
 #------------ Input Parameters for EAL-:
 
+
+#make input in future
 rho = 2.5  # density in g/cm^3
 N_v = 16  # valence electrons per molecule
 MZ = 80  # molecular mass
@@ -34,6 +36,9 @@ f_eal = f_pref + '.eal'  # EALs
 
 #------------ Input Arrays ------------:
 
+    #this input sections should recongize theta and apply it to prog
+
+
 with open(f_in, 'r', encoding='latin-1') as file:
     lines = file.readlines()
     lines = [line.strip() for line in lines if line.strip()]
@@ -52,7 +57,7 @@ df = pd.read_csv(f_in, sep='\t', header=0, encoding='latin-1')
 in_array = df.to_numpy()
 
 #get # of energies and species:
-n_hv = np.size(in_array, axis=0) - 1
+N_hv = np.size(in_array, axis=0) - 1
 n_spec = np.size(in_array, axis=1) - 1
 
 
@@ -60,7 +65,7 @@ n_spec = np.size(in_array, axis=1) - 1
 
 #get hv and species (BE):
 hv = []
-for k in range(0, n_hv):
+for k in range(0, N_hv):
     hv.append(in_array[k + 1, 0])
 
 spec = []
@@ -68,8 +73,8 @@ for j in range(0, n_spec):
     spec.append(in_array[0, j + 1])
 
 #create measured array - kxj array:
-Meas = np.empty((n_hv, n_spec))
-for k in range(0, n_hv):
+Meas = np.empty((N_hv, n_spec))
+for k in range(0, N_hv): #last point for capat
     for j in range(0, n_spec):
         Meas[k, j] = in_array[k + 1, j + 1]
         
@@ -84,7 +89,7 @@ def get_user_inputs():
     f_in = filedialog.askopenfilename()
 
     # Ask for other parameters
-    theta = float(input("Enter theta: "))
+    theta = float(input("Enter theta: ")) #should be from input file
     delta = float(input("Enter delta value: "))
     max_it = int(input("Enter maximum number of iterations: "))
     max_a_it = int(input("Enter maximum number of alpha iterations: "))
@@ -111,61 +116,6 @@ def calcEAL(theta, Meas, MZ, N_model, E_gap):
             EAL[k, j] = term1 * term2 * term3
 
     return EAL
-
-
-
-"""
-def calcEAL(theta, Meas, MZ, N_model, E_gap):    
-   # calculate EAL using reference 4
-   # N_hv, N_spec = np.shape(Meas)
-   # EAL = np.zeros((N_hv, N_spec))
-    
-    #for k in range(N_hv):
-    #    for j in range(N_spec):
-    #        term1 = MZ * calc[k, j]
-    #       term2 = N_model * E_gap / (N_v * rho)
-    #        term3 = (1 - np.exp(-theta * Meas[k, j])) / (1 - np.exp(-theta * calc[k, j]))
-    #        EAL[k, j] = term1 * term2 * term3
-    
-    #calc = np.zeros_like(Meas)
-    calc = np.ones((N_hv, N_spec))  # Initialize calc with the same shape as Meas
-    M_j = np.zeros_like(Meas)
-    #N_model = np.zeros_like(Meas)
-    N_model = np.ones((N_hv, N_spec))  # Corrected initialization of N_model
-    alpha = 1.0
-    chisq_old = 1e30
-    entropy_old = 1e30
-
-    # Iterative algorithm
-    for it in range(max_it):
-        for a_it in range(max_a_it):
-            #calc_new = calcModel(theta, MZ, N_model, rho, E_gap)
-            calc_new = calcCalc(theta, calc, M_j, N_model)  # Corrected function name
-            chisq = calcChisq(Meas, calc_new, theta)
-
-            M_j_new = M_j - alpha * (calc_new - calc) * calc_new / (calc_new ** 2 + delta)
-            N_model_new = N_model - alpha * (calc_new - calc) * M_j_new / (calc_new ** 2 + delta)
-
-            entropy_new = calcEntropy(Meas, calc_new)
-
-            if entropy_new > entropy_old:
-                alpha /= 10
-                if alpha < 1e-6:
-                    alpha = 1e-6
-            else:
-                alpha *= 10
-                if alpha > 1e6:
-                    alpha = 1e6
-
-            if entropy_new < entropy_old:
-                calc = calc_new
-                M_j = M_j_new
-                N_model = N_model_new
-                entropy_old = entropy_new
-                chisq_old = chisq
-    
-    return EAL
-"""
 ###new func
 def calcModel(theta, MZ, N_model, rho, E_gap):
     # calculate calc using reference 1
@@ -188,19 +138,19 @@ def calcCalc(theta, calc, M_j, N_model):
     for k in range(N_hv):
         for j in range(N_spec):
             term1 = 1 - np.exp(-theta * calc[k, j])
-            term2 = (1 - term1) / (1 - np.exp(-theta * M_j[k, :]))
+            term2 = (1 - term1) / (1 - np.exp(-theta * M_j[k]))      #overflow encounter    term2 = (1 - term1) / (1 - np.exp(-theta * M_j[k, :])) 
             calc_new[k, j] = np.sum(N_model * term2)
-    
+
     return calc_new
 
-def calcChisq(Meas, calc, theta):
+def calcChisq(Meas, calc, theta):   #chisq is the square of term1
     # calculate chi-squared value
     N_hv, N_spec = np.shape(Meas)
     chisq = 0
     
     for k in range(N_hv):  # Now iterate over the correct axis
         for j in range(N_spec):  # Now iterate over the correct axis
-            term1 = Meas[k, j] - calc[k, j]
+            term1 = Meas[k, j] - calc[k, j]     
             if np.isclose(calc[k, j], 0):
                 term2 = 0
             else:
@@ -293,15 +243,6 @@ for it in range(max_it):
     display_results(EAL, chisq_final, entropy_final, hv, spec)
 
     
-    """""
-    # output results
-    #test outputs to test code 
-    print("theta, Meas, MZ, N_model, E_gap", theta, Meas, MZ, E_gap)
-    
-    print("Final Results:")
-    print("Final Chisq: ", chisq_final)
-    print("FInal Entropy: ", entropy_final)
-    """
 
 #return not in function? 
 # pilace in calc eal then call function towards end of prog?
