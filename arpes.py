@@ -60,7 +60,6 @@ in_array = df.to_numpy()
 N_hv = np.size(in_array, axis=0) - 1
 n_spec = np.size(in_array, axis=1) - 1
 
-
 #------------ End Of Input Arrays ------------:
 
 #get hv and species (BE):
@@ -77,7 +76,8 @@ Meas = np.empty((N_hv, n_spec))
 for k in range(0, N_hv): #last point for capat
     for j in range(0, n_spec):
         Meas[k, j] = in_array[k + 1, j + 1]
-        
+       
+ 
 #------------ Parameters ------------:
 
 # Define a function to get user inputs through a pop-up window
