@@ -138,7 +138,12 @@ def calcCalc(theta, calc, M_j, N_model):
     for k in range(N_hv):
         for j in range(N_spec):
             term1 = 1 - np.exp(-theta * calc[k, j])
-            term2 = (1 - term1) / (1 - np.exp(-theta * M_j[k]))      #overflow encounter    term2 = (1 - term1) / (1 - np.exp(-theta * M_j[k, :])) 
+        #old version of ## term2 = (1 - term1) / (1 - np.exp(-theta * M_j[k]))      #overflow encounter    term2 = (1 - term1) / (1 - np.exp(-theta * M_j[k, :])) 
+         #New version of term 2 numerical stability
+            if np.exp(-theta * M_j[k, j]) < 1e-6:  # Threshold chosen for numerical stability
+                term2 = 0.0
+            else:
+                term2 = (1 - term1) / (1 - np.exp(-theta * M_j[k, j]))          
             calc_new[k, j] = np.sum(N_model * term2)
 
     return calc_new
