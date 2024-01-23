@@ -6,6 +6,7 @@ from tkinter import filedialog
 import tkinter as tk
 from tkinter import messagebox
 import warnings  # Import the warnings module
+from flask import Flask, request, jsonify
 
 #------------ Input Parameters for EAL-:
 
@@ -234,6 +235,22 @@ for it in range(max_it):
     EAL = calcEAL(theta, Meas, MZ, N_model, E_gap)
     chisq_final = calcChisq(Meas, calc_new, theta)
     entropy_final = calcEntropy(Meas, calc_new)   
+    
+    app = Flask(__name__)
+    
+    @app.route('/process', methods=['POST'])
+    def process_file():
+        file = request.files['file']
+
+        # Add your processing logic here
+        # For now, let's just return a dummy response
+        results = {'message': 'File processed successfully'}
+        
+        return jsonify(results)
+
+if __name__ == '__main__':
+    app.run(debug=True) 
+    
     
     def display_results(EAL, chisq_final, entropy_final, hv, spec):
         msg = f"Final Chisq: {chisq_final}\nFinal Entropy: {entropy_final}"
